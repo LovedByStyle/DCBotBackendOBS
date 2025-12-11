@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVSA Bot Control Center</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        
+        .main-content {
+            background: rgba(26, 32, 44, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(66, 153, 225, 0.2);
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        
+        .welcome-text {
+            font-size: 32px;
+            font-weight: 700;
+            color: #e2e8f0;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #4299e1, #667eea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            color: #a0aec0;
+            font-weight: 400;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 40px;
+            background: #2d3748;
+            padding: 8px;
+            border-radius: 12px;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 16px 24px;
+            background: transparent;
+            color: #a0aec0;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .nav-tab:hover {
+            color: #63b3ed;
+            background: rgba(99, 179, 237, 0.1);
+        }
+        
+        .nav-tab.active {
+            color: white;
+            background: linear-gradient(135deg, #4299e1, #667eea);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Settings Tab Styles */
+        .settings-section {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .settings-header h3 {
+            margin: 0;
+            color: #2d3748;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .settings-view {
+            background: #2d3748;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #4a5568;
+        }
+
+        .setting-item {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .setting-item label {
+            display: block;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .setting-value {
+            color: #e2e8f0;
+            font-size: 16px;
+            padding: 8px 12px;
+            background: #1a202c;
+            border-radius: 6px;
+            border: 1px solid #4a5568;
+            min-height: 20px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            word-break: break-all;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .form-actions .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-actions .btn-cancel {
+            background: #4a5568 !important;
+            color: #e2e8f0 !important;
+            border: 1px solid #718096 !important;
+        }
+
+        .form-actions .btn-cancel:hover {
+            background: #718096 !important;
+        }
+
+        .form-actions .btn-save {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+        }
+
+        .form-actions .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #4a5568;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #2d3748;
+            color: #e2e8f0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #4299e1;
+            background: #1a202c;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+        }
+
+        .password-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-input-container input {
+            padding-right: 50px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .password-toggle:hover {
+            background-color: #f7fafc;
+        }
+
+        .eye-icon {
+            font-size: 16px;
+            user-select: none;
+        }
+        
+        .form-group small {
+            display: block;
+            margin-top: 6px;
+            color: #a0aec0;
+            font-size: 13px;
+        }
+        
+        .save-btn {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+            width: 100%;
+        }
+        
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.4);
+        }
+        
+        /* Accounts Tab Styles */
+        .accounts-section {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .add-account-btn {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .add-account-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.4);
+        }
+        
+        .accounts-list {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .account-card {
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        
+        .account-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border-color: #4299e1;
+        }
+
+        /* Click Tracking Styles */
+        .click-stats {
+            margin-top: 16px;
+            padding: 16px;
+            background: #1a202c;
+            border-radius: 12px;
+            border: 1px solid #4a5568;
+        }
+
+        .click-progress {
+            margin-bottom: 12px;
+        }
+
+        .click-progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .click-progress-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .click-progress-count {
+            font-size: 14px;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #4a5568;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.warning {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+        }
+
+        .progress-fill.danger {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+        }
+
+        .click-breakdown {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .click-breakdown-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 16px;
+            background: #2d3748;
+            border-radius: 8px;
+            border: 1px solid #4a5568;
+            font-size: 12px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .click-breakdown-label {
+            color: #a0aec0;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .click-breakdown-count {
+            color: #e2e8f0;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .last-click {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #a0aec0;
+            text-align: center;
+        }
+        
+        .account-info h3 {
+            margin: 0 0 8px 0;
+            color: #e2e8f0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .account-info p {
+            margin: 0;
+            color: #a0aec0;
+            font-size: 14px;
+        }
+        
+        .account-actions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-edit {
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            box-shadow: 0 2px 8px rgba(66, 153, 225, 0.3);
+        }
+        
+        .btn-edit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+        }
+        
+        .btn-delete {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            color: white;
+            box-shadow: 0 2px 8px rgba(245, 101, 101, 0.3);
+        }
+        
+        .btn-delete:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 101, 101, 0.4);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #2d3748;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            animation: modalSlideIn 0.3s ease;
+            border: 1px solid #4a5568;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 24px;
+            color: #e2e8f0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .modal-content input {
+            background: #1a202c !important;
+            border: 2px solid #4a5568 !important;
+            color: #e2e8f0 !important;
+        }
+
+        .modal-content input:focus {
+            border-color: #4299e1 !important;
+            background: #2d3748 !important;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+        }
+        
+        .btn-save {
+            flex: 1;
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+        }
+        
+        .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+        
+        .btn-cancel {
+            flex: 1;
+            background: #4a5568;
+            color: #e2e8f0;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: 1px solid #718096;
+        }
+
+        .modal-actions .btn-cancel {
+            background: #4a5568 !important;
+            color: #e2e8f0 !important;
+            border: 1px solid #718096 !important;
+        }
+
+        .modal-actions .btn-cancel:hover {
+            background: #718096 !important;
+        }
+        
+        .btn-cancel:hover {
+            background: #718096;
+        }
+        
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            color: white;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #a0aec0;
+            background: #2d3748;
+            border-radius: 16px;
+            border: 2px dashed #4a5568;
+        }
+        
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #e2e8f0;
+        }
+        
+        .empty-state p {
+            font-size: 14px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .main-content {
+                padding: 24px;
+            }
+            
+            .welcome-text {
+                font-size: 24px;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .account-card {
+                padding: 20px;
+            }
+            
+            .account-actions {
+                position: static;
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 16px;
+            }
+            
+            .click-breakdown {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .click-breakdown-item {
+                flex-direction: row;
+                justify-content: space-between;
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-content">
+            <div class="welcome-section">
+                <div class="welcome-text">Welcome to DVSA Bot Configuration Center</div>
+                <div class="subtitle">Manage common settings and accounts for all Chrome extensions</div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-content active">
+                <div class="settings-section">
+                    <!-- Settings Header -->
+                    <div class="settings-header">
+                        <h3>Common Settings</h3>
+                        <div style="display: flex; gap: 8px;">
+                            <button id="test-message-btn" class="btn btn-edit" onclick="sendTestMessage()" style="background: linear-gradient(135deg, #4299e1, #3182ce);">
+                                <span>📤</span>
+                                <span>Send Test Message</span>
+                            </button>
+                            <button id="edit-settings-btn" class="btn btn-edit" onclick="toggleEditMode()">
+                                <span>✏️</span>
+                                <span>Edit</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- View Mode -->
+                    <div id="settings-view-mode" class="settings-view">
+                        <div class="setting-item">
+                            <label>Min Jitter</label>
+                            <div class="setting-value" id="view-jitter_min">0.8 seconds</div>
+                        </div>
+                        <div class="setting-item">
+                            <label>Max Jitter</label>
+                            <div class="setting-value" id="view-jitter_max">1.5 seconds</div>
+                        </div>
+                        <div class="setting-item">
+                            <label>Max Clicks</label>
+                            <div class="setting-value" id="view-max_clicks">9500 clicks</div>
+                        </div>
+                        <div class="setting-item">
+                            <label>Max Running Time</label>
+                            <div class="setting-value" id="view-max_running_time">20 minutes</div>
+                        </div>
+                        <div class="setting-item">
+                            <label>Cooldown Time</label>
+                            <div class="setting-value" id="view-cooldown_time">45 minutes</div>
+                        </div>
+                        <div class="setting-item">
+                            <label>Target Deadline Date</label>
+                            <div class="setting-value" id="view-deadline_date">3 months from now</div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Mode -->
+                    <div id="settings-edit-mode" class="settings-edit" style="display: none;">
+                        <form id="settings-form">
+                            <div class="form-group">
+                                <label for="jitter_min">Min Jitter (seconds)</label>
+                                <input type="number" id="jitter_min" name="jitter_min" min="0.1" max="5" step="0.1" value="0.8">
+                                <small>Minimum delay between clicks (0.1-5 seconds)</small>
+                            </div>
+
+                        <div class="form-group">
+                            <label for="jitter_max">Max Jitter (seconds)</label>
+                            <input type="number" id="jitter_max" name="jitter_max" min="0.1" max="5" step="0.1" value="1.5">
+                            <small>Maximum delay between clicks (0.1-5 seconds)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="max_clicks">Max Clicks</label>
+                            <input type="number" id="max_clicks" name="max_clicks" min="100" max="50000" value="9500">
+                            <small>Maximum clicks per day before bot stops (100-50000)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="max_running_time">Max Running Time (minutes)</label>
+                            <input type="number" id="max_running_time" name="max_running_time" min="1" max="120" value="20">
+                            <small>Maximum bot running time per session (1-120 minutes)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cooldown_time">Cooldown Time (minutes)</label>
+                            <input type="number" id="cooldown_time" name="cooldown_time" min="1" max="180" value="45">
+                            <small>Required cooldown time between sessions (1-180 minutes)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="deadline_date">Target Deadline Date</label>
+                            <input type="date" id="deadline_date" name="deadline_date">
+                            <small>Target date for test slots (slots beyond this date will be ignored)</small>
+                        </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-cancel" onclick="cancelEdit()">Cancel</button>
+                                <button type="submit" class="btn btn-save">💾 Save Settings</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+
+        // Load current settings
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings/common');
+                const data = await response.json();
+
+                if (data.success && data.settings) {
+                    // Update form fields
+                    document.getElementById('jitter_min').value = data.settings.jitter_min || 0.8;
+                    document.getElementById('jitter_max').value = data.settings.jitter_max || 1.5;
+                    document.getElementById('max_clicks').value = data.settings.max_clicks || 9500;
+                    document.getElementById('max_running_time').value = data.settings.max_running_time || 20;
+                    document.getElementById('cooldown_time').value = data.settings.cooldown_time || 45;
+                    
+                    // Set deadline date
+                    if (data.settings.deadline_date) {
+                        const deadlineDate = new Date(data.settings.deadline_date);
+                        document.getElementById('deadline_date').value = deadlineDate.toISOString().split('T')[0];
+                    } else {
+                        // Default to 3 months from now
+                        const threeMonthsFromNow = new Date();
+                        threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
+                        document.getElementById('deadline_date').value = threeMonthsFromNow.toISOString().split('T')[0];
+                    }
+                    
+                    // Update view mode display
+                    updateSettingsView(data.settings);
+                }
+            } catch (error) {
+                console.error('Failed to load settings:', error);
+            }
+        }
+
+        // Update settings view mode
+        function updateSettingsView(settings) {
+            document.getElementById('view-jitter_min').textContent = (settings.jitter_min || 0.8) + ' seconds';
+            document.getElementById('view-jitter_max').textContent = (settings.jitter_max || 1.5) + ' seconds';
+            document.getElementById('view-max_clicks').textContent = (settings.max_clicks || 9500) + ' clicks';
+            document.getElementById('view-max_running_time').textContent = (settings.max_running_time || 20) + ' minutes';
+            document.getElementById('view-cooldown_time').textContent = (settings.cooldown_time || 45) + ' minutes';
+            
+            // Format deadline date
+            const deadlineDate = settings.deadline_date ? new Date(settings.deadline_date) : null;
+            if (deadlineDate) {
+                document.getElementById('view-deadline_date').textContent = deadlineDate.toLocaleDateString('en-GB', {
+                    day: '2-digit',
+                    month: '2-digit', 
+                    year: 'numeric'
+                });
+            } else {
+                document.getElementById('view-deadline_date').textContent = '3 months from now';
+            }
+        }
+
+        // Toggle edit mode
+        function toggleEditMode() {
+            const viewMode = document.getElementById('settings-view-mode');
+            const editMode = document.getElementById('settings-edit-mode');
+            const editBtn = document.getElementById('edit-settings-btn');
+            
+            viewMode.style.display = 'none';
+            editMode.style.display = 'block';
+            editBtn.style.display = 'none';
+        }
+
+        // Cancel edit mode
+        function cancelEdit() {
+            const viewMode = document.getElementById('settings-view-mode');
+            const editMode = document.getElementById('settings-edit-mode');
+            const editBtn = document.getElementById('edit-settings-btn');
+            
+            viewMode.style.display = 'block';
+            editMode.style.display = 'none';
+            editBtn.style.display = 'flex';
+            
+            // Reload settings to reset form
+            loadSettings();
+        }
+
+        // Save settings
+        document.getElementById('settings-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                jitter_min: parseFloat(document.getElementById('jitter_min').value),
+                jitter_max: parseFloat(document.getElementById('jitter_max').value),
+                max_clicks: parseInt(document.getElementById('max_clicks').value),
+                max_running_time: parseInt(document.getElementById('max_running_time').value),
+                cooldown_time: parseInt(document.getElementById('cooldown_time').value),
+                deadline_date: document.getElementById('deadline_date').value
+            };
+
+            try {
+                const response = await fetch('/api/settings/common', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification('Settings saved successfully!', 'success');
+                    // Switch back to view mode and update display
+                    const viewMode = document.getElementById('settings-view-mode');
+                    const editMode = document.getElementById('settings-edit-mode');
+                    const editBtn = document.getElementById('edit-settings-btn');
+                    
+                    viewMode.style.display = 'block';
+                    editMode.style.display = 'none';
+                    editBtn.style.display = 'flex';
+                    
+                    // Update view with saved data
+                    updateSettingsView(formData);
+                } else {
+                    showNotification('Failed to save settings', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to save settings:', error);
+                showNotification('Failed to save settings', 'error');
+            }
+        });
+
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Send test message to all channels
+        async function sendTestMessage() {
+            const btn = document.getElementById('test-message-btn');
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳</span><span>Sending...</span>';
+            
+            try {
+                const response = await fetch('/api/settings/test-message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification('✅ Test message sent to all channels!', 'success');
+                } else {
+                    showNotification('❌ Failed to send test message: ' + (data.message || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Failed to send test message:', error);
+                showNotification('❌ Failed to send test message', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+        });
+    </script>
+</body>
+</html>
