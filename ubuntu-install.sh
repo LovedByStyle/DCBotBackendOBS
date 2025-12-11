@@ -41,12 +41,13 @@ echo ""
 
 echo "👤 Step 4: Creating user ${USERNAME}..."
 if /usr/bin/id "$USERNAME" &>/dev/null; then
-    echo "⚠️  User ${USERNAME} already exists, skipping creation"
+    echo "⚠️  User ${USERNAME} already exists, updating password"
 else
     /usr/sbin/useradd -m -s /bin/bash "$USERNAME"
-    echo "$USERNAME:$PASSWORD" | /usr/sbin/chpasswd
     echo "✅ User ${USERNAME} created"
 fi
+echo "$USERNAME:$PASSWORD" | /usr/sbin/chpasswd
+echo "✅ Password set for user ${USERNAME}"
 echo ""
 
 echo "📥 Step 5: Downloading Chrome extension..."
