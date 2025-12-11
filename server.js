@@ -2,6 +2,11 @@ require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
+const archiver = require('archiver');
+const { exec } = require('child_process');
+const { promisify } = require('util');
+const execAsync = promisify(exec);
 const Database = require('./lib/database');
 const AlertCenter = require('./lib/alertCenter');
 
@@ -268,6 +273,96 @@ app.get('/ping', (req, res) => {
         status: 'ok',
         timestamp: new Date().toISOString()
     });
+});
+
+// ============================================
+// Chrome Extension Download
+// ============================================
+
+app.get('/chdownload', (req, res) => {
+    const chextensionPath = path.join(__dirname, 'public', 'chextension');
+    
+    // Check if directory exists
+    if (!fs.existsSync(chextensionPath)) {
+        return res.status(404).json({ success: false, message: 'Chrome extension directory not found' });
+    }
+
+    // Set response headers for zip download
+    const zipFileName = `chextension-${Date.now()}.zip`;
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${zipFileName}"`);
+
+    // Create archiver instance
+    const archive = archiver('zip', {
+        zlib: { level: 9 }
+    });
+
+    // Handle archive errors
+    archive.on('error', (err) => {
+        console.error('Archive error:', err);
+        if (!res.headersSent) {
+            res.status(500).json({ success: false, message: 'Failed to create zip file' });
+        }
+    });
+
+    // Pipe archive data to response
+    archive.pipe(res);
+
+    // Add directory to archive (recursively)
+    archive.directory(chextensionPath, false);
+
+    // Finalize the archive
+    archive.finalize();
+});
+
+// ============================================
+// Ubuntu Installation Endpoint
+// ============================================
+
+app.get('/install', async (req, res) => {
+    try {
+        const scriptPath = path.join(__dirname, 'ubuntu-install.sh');
+        
+        if (!fs.existsSync(scriptPath)) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Installation script not found' 
+            });
+        }
+
+        fs.chmodSync(scriptPath, '755');
+
+        console.log('Starting Ubuntu installation...');
+        
+        res.status(200).json({ 
+            success: true, 
+            message: 'Installation started. Check server logs for progress.' 
+        });
+
+        execAsync(`bash ${scriptPath}`, {
+            maxBuffer: 1024 * 1024 * 10,
+            timeout: 300000
+        })
+        .then(({ stdout, stderr }) => {
+            console.log('Installation completed successfully');
+            console.log(stdout);
+            if (stderr) {
+                console.error('Installation stderr:', stderr);
+            }
+        })
+        .catch((error) => {
+            console.error('Installation failed:', error.message);
+            if (error.stdout) console.log('stdout:', error.stdout);
+            if (error.stderr) console.error('stderr:', error.stderr);
+        });
+
+    } catch (error) {
+        console.error(`GET /install error: ${error.message}`);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Failed to start installation' 
+        });
+    }
 });
 
 // ============================================

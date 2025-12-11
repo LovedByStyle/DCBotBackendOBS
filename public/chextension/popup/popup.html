@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancel Notifier</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #1a202c; display: flex; align-items: center; justify-content: center; z-index: 1000;">
+        <div style="text-align: center; color: #a0aec0;">
+            <div class="spinner" style="width: 40px; height: 40px; margin: 0 auto 12px; border: 3px solid #2d3748; border-top-color: #4299e1; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+            <div style="font-size: 12px;">Loading...</div>
+        </div>
+    </div>
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+
+    <div class="container" id="mainContainer" style="visibility: hidden; opacity: 0; transition: opacity 0.3s;">
+        <header>
+            <h1>Cancel Notifier</h1>
+        </header>
+
+        <div class="config-section">
+            <!-- Click Progress Section -->
+            <div id="clickProgressSection" class="form-group">
+                <div style="flex: 1;">
+                    <div class="progress-text-small" style="font-size: 12px; color: #718096; margin-bottom: 4px;">
+                        <span id="currentClicks">0</span> / <span id="maxClicks">9500</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions-section">
+            <button id="startBtn" class="btn btn-start">
+                <span class="start-icon">▶</span>
+            </button>
+            <button id="stopBtn" class="btn btn-stop" style="display: none;">
+                <span class="stop-icon">⏹</span>
+            </button>
+        </div>
+
+        <!-- LED Countdown Clock -->
+        <div id="countdownSection" class="countdown-section" style="display: none;">
+            <div class="led-clock">
+                <div class="led-display">
+                    <div class="led-digit" id="led-minutes-tens">0</div>
+                    <div class="led-digit" id="led-minutes-ones">0</div>
+                    <div class="led-separator">:</div>
+                    <div class="led-digit" id="led-seconds-tens">0</div>
+                    <div class="led-digit" id="led-seconds-ones">0</div>
+                </div>
+                <div class="countdown-label">Running Time</div>
+            </div>
+            <!-- Countdown Alert -->
+            <div id="countdownAlert" class="countdown-alert" style="display: none;">
+                <div class="alert-content">
+                    <span class="alert-icon">😴</span>
+                    <span class="alert-text">Session complete, need to take a break! Switch to another Chrome profile to continue.</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Version 2.0.0</p>
+            <p id="lastUpdate" style="color: #718096;">Sync to load settings</p>
+        </footer>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

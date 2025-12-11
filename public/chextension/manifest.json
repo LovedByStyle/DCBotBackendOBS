@@ -1,0 +1,75 @@
+{
+  "manifest_version": 3,
+  "name": "Cancel Notifier",
+  "version": "1.0.0",
+  "description": "Automated DVSA driving test slot monitoring and booking",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4iVfk+n6MnJHq1fBfg2ppewxh4XVtfOFiWWAt+1FCKjOGJgDab2Mev24VINff/XgYgQQD/8oe6+X9yRlUdb1Ebka5T09kEd8DX3OE2uY2bDX4tQIfd5EW5OBDxekcw6HFQiNJedF35qnFh/YBM/IIERnjNx3sxQjUu23Zoc4ci9jpim3BMHBaggsSRFvDqrf0gQ+GtONrq4M0pdFfsfzGND4v0Z8AIw/pEBfFBXXPdDFP/aSpu/L4nQ166cDOWpaX+G/Ipp4n3S8h2JANzxJ2qqfMkwsPQOYqRLOkLgBZH1pfKOajzLb+Jg7TdBC5NR+S2saLVmsgCakTNyl/ojK+QIDAQAB",
+  "permissions": [
+    "storage",
+    "notifications",
+    "offscreen",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://driver-services.dvsa.gov.uk/*",
+    "https://api.telegram.org/*",
+    "https://discord.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://driver-services.dvsa.gov.uk/*"],
+      "js": ["scripts/xhr-hook.js"],
+      "run_at": "document_start",
+      "all_frames": false,
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://driver-services.dvsa.gov.uk/*"],
+      "js": ["scripts/content.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    },
+    {
+      "matches": ["https://www.access.service.gov.uk/login/signin/creds*"],
+      "js": ["scripts/login-handler.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": ["https://www.access.service.gov.uk/login/already-signed-in/*"],
+      "js": ["scripts/already-signed-in-handler.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": ["https://driver-services.dvsa.gov.uk/obs-web/pages/home*"],
+      "js": ["scripts/home-form-filler.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": ["https://driver-services.dvsa.gov.uk/obs-web/pages/home*"],
+      "js": ["scripts/reservation-success-detector.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": ["<all_urls>"],
+      "exclude_matches": ["http://localhost/*", "http://127.0.0.1/*", "http://0.0.0.0/*"],
+      "js": ["scripts/simple-captcha-detector.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html"
+  },
+  "icons": {
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
