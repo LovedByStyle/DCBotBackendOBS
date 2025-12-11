@@ -85,18 +85,18 @@ app.post('/api/settings/common', async (req, res) => {
 // Start bot session
 app.post('/api/bot/start-session', async (req, res) => {
     try {
-        console.log('Bot session started');
+        console.log('Session started');
         
         // Send alert if AlertCenter is initialized
         if (alertCenter) {
             const settings = await db.getCommonSettings();
             const maxRunningTime = settings.max_running_time || 20;
             
-            const message = `🚀 Bot session started!\n\n⏰ Max Running Time: ${maxRunningTime} minutes\n✅ Bot is now actively searching for slots`;
+            const message = `🚀 Session started!\n\n⏰ Max Running Time: ${maxRunningTime} minutes\n✅ Actively searching for slots`;
             
             try {
-                await alertCenter.telegram.sendMessage(`🤖 Bot Session Started\n\n${message}`);
-                await alertCenter.discord.sendMessage(message, '🤖 Bot Session Started');
+                await alertCenter.telegram.sendMessage(`🚀 Session Started\n\n${message}`);
+                await alertCenter.discord.sendMessage(message, '🚀 Session Started');
             } catch (alertError) {
                 console.error(`Failed to send session start alert: ${alertError.message}`);
             }
@@ -114,18 +114,18 @@ app.post('/api/bot/end-session', async (req, res) => {
     try {
         const { clicks_count } = req.body;
         
-        console.log('Bot session ended');
+        console.log('Session ended');
         
         // Send alert if AlertCenter is initialized
         if (alertCenter) {
             const settings = await db.getCommonSettings();
             const cooldownMinutes = settings.cooldown_time || 45;
             
-            const message = `😴 Bot worked enough, need to take a break!\n\n⏰ Cooldown: ${cooldownMinutes} minutes\n🔄 Switch to another Chrome profile to continue`;
+            const message = `😴 Session complete, taking a break!\n\n⏰ Cooldown: ${cooldownMinutes} minutes\n🔄 Switch to another Chrome profile to continue`;
             
             try {
-                await alertCenter.telegram.sendMessage(`🤖 Bot Session Complete\n\n${message}`);
-                await alertCenter.discord.sendMessage(message, '🤖 Bot Session Complete');
+                await alertCenter.telegram.sendMessage(`😴 Session Complete\n\n${message}`);
+                await alertCenter.discord.sendMessage(message, '😴 Session Complete');
             } catch (alertError) {
                 console.error(`Failed to send session end alert: ${alertError.message}`);
             }
@@ -141,14 +141,14 @@ app.post('/api/bot/end-session', async (req, res) => {
 // Reservation success notification
 app.post('/api/bot/reservation-success', async (req, res) => {
     try {
-        const { minutesRemaining, reservedCount } = req.body;
+        const { minutesRemaining, reservedCount, testCenter, slots } = req.body;
         
         console.log(`Reservation success: ${reservedCount} slot(s), ${minutesRemaining} minutes remaining`);
         
         // Send alert if AlertCenter is initialized
         if (alertCenter) {
             try {
-                await alertCenter.notifyReservationSuccess('', '', minutesRemaining, reservedCount);
+                await alertCenter.notifyReservationSuccess(testCenter || 'Unknown', slots || [], minutesRemaining, reservedCount);
             } catch (alertError) {
                 console.error(`Failed to send reservation success alert: ${alertError.message}`);
             }
@@ -158,6 +158,29 @@ app.post('/api/bot/reservation-success', async (req, res) => {
     } catch (error) {
         console.error(`POST /api/bot/reservation-success error: ${error.message}`);
         res.status(500).json({ success: false, message: 'Failed to send reservation success notification' });
+    }
+});
+
+// Slot lost notification
+app.post('/api/bot/slot-lost', async (req, res) => {
+    try {
+        const { locationInfo } = req.body;
+        
+        console.log(`Slot lost: ${locationInfo}`);
+        
+        // Send alert if AlertCenter is initialized
+        if (alertCenter) {
+            try {
+                await alertCenter.notifySlotLost(locationInfo);
+            } catch (alertError) {
+                console.error(`Failed to send slot lost alert: ${alertError.message}`);
+            }
+        }
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error(`POST /api/bot/slot-lost error: ${error.message}`);
+        res.status(500).json({ success: false, message: 'Failed to send slot lost notification' });
     }
 });
 
@@ -174,7 +197,7 @@ app.post('/api/settings/test-message', async (req, res) => {
             });
         }
 
-        const testMessage = '🧪 Test message from DVSA Bot Control Center\n\nThis is a test to verify all notification channels are working correctly.';
+        const testMessage = '🧪 Test message from DVSA Control Center\n\nThis is a test to verify all notification channels are working correctly.';
 
         const results = {
             telegram: false,
