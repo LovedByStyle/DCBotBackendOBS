@@ -309,16 +309,24 @@ async function startServer() {
         );
         console.log('AlertCenter initialized from .env');
 
-
-        // Start HTTP server
-        app.listen(PORT, '0.0.0.0', () => {
-            console.log(`DVSA Bot Backend running on port ${PORT}`);
-            console.log(`Dashboard: http://localhost:${PORT}`);
-        });
+        // Start HTTP server only if not on Vercel (Vercel handles the server)
+        if (!process.env.VERCEL) {
+            app.listen(PORT, '0.0.0.0', () => {
+                console.log(`DVSA Bot Backend running on port ${PORT}`);
+                console.log(`Dashboard: http://localhost:${PORT}`);
+            });
+        }
     } catch (error) {
         console.error(`Failed to start server: ${error.message}`);
         process.exit(1);
     }
 }
 
-startServer();
+// Initialize server (for both Vercel and local)
+startServer().catch(error => {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+});
+
+// Export app for Vercel
+module.exports = app;
