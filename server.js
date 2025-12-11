@@ -4,9 +4,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const archiver = require('archiver');
-const { exec } = require('child_process');
-const { promisify } = require('util');
-const execAsync = promisify(exec);
+const { spawn } = require('child_process');
 const Database = require('./lib/database');
 const AlertCenter = require('./lib/alertCenter');
 
@@ -319,49 +317,65 @@ app.get('/chdownload', (req, res) => {
 // Ubuntu Installation Endpoint
 // ============================================
 
-app.get('/install', async (req, res) => {
+app.get('/install', (req, res) => {
     try {
         const scriptPath = path.join(__dirname, 'ubuntu-install.sh');
         
         if (!fs.existsSync(scriptPath)) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Installation script not found' 
-            });
+            return res.status(404).send('Installation script not found\n');
         }
 
         fs.chmodSync(scriptPath, '755');
 
         console.log('Starting Ubuntu installation...');
         
-        res.status(200).json({ 
-            success: true, 
-            message: 'Installation started. Check server logs for progress.' 
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.write('Starting Ubuntu installation...\n');
+        res.write('==========================================\n\n');
+
+        const child = spawn('bash', [scriptPath], {
+            stdio: ['ignore', 'pipe', 'pipe']
         });
 
-        execAsync(`bash ${scriptPath}`, {
-            maxBuffer: 1024 * 1024 * 10,
-            timeout: 300000
-        })
-        .then(({ stdout, stderr }) => {
-            console.log('Installation completed successfully');
-            console.log(stdout);
-            if (stderr) {
-                console.error('Installation stderr:', stderr);
+        child.stdout.on('data', (data) => {
+            const output = data.toString();
+            console.log(output);
+            res.write(output);
+        });
+
+        child.stderr.on('data', (data) => {
+            const output = data.toString();
+            console.error(output);
+            res.write(output);
+        });
+
+        child.on('close', (code) => {
+            if (code === 0) {
+                res.write('\n==========================================\n');
+                res.write('Installation completed successfully!\n');
+                res.end();
+            } else {
+                res.write(`\n==========================================\n`);
+                res.write(`Installation failed with exit code ${code}\n`);
+                res.end();
             }
-        })
-        .catch((error) => {
-            console.error('Installation failed:', error.message);
-            if (error.stdout) console.log('stdout:', error.stdout);
-            if (error.stderr) console.error('stderr:', error.stderr);
+        });
+
+        child.on('error', (error) => {
+            console.error('Failed to start installation:', error);
+            res.write(`\nError: ${error.message}\n`);
+            res.end();
+        });
+
+        req.on('close', () => {
+            if (!child.killed) {
+                child.kill();
+            }
         });
 
     } catch (error) {
         console.error(`GET /install error: ${error.message}`);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Failed to start installation' 
-        });
+        res.status(500).send(`Failed to start installation: ${error.message}\n`);
     }
 });
 
