@@ -342,61 +342,16 @@ app.get('/install', (req, res) => {
             return res.status(404).send('Installation script not found\n');
         }
 
-        try {
-            fs.chmodSync(scriptPath, '755');
-        } catch (chmodError) {
-            console.warn('Could not chmod script (may be read-only filesystem):', chmodError.message);
-        }
-
-        console.log('Starting Ubuntu installation...');
-        
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        res.write('Starting Ubuntu installation...\n');
-        res.write('==========================================\n\n');
-
-        const child = spawn('bash', [scriptPath], {
-            stdio: ['ignore', 'pipe', 'pipe']
-        });
-
-        child.stdout.on('data', (data) => {
-            const output = data.toString();
-            console.log(output);
-            res.write(output);
-        });
-
-        child.stderr.on('data', (data) => {
-            const output = data.toString();
-            console.error(output);
-            res.write(output);
-        });
-
-        child.on('close', (code) => {
-            if (code === 0) {
-                res.write('\n==========================================\n');
-                res.write('Installation completed successfully!\n');
-                res.end();
-            } else {
-                res.write(`\n==========================================\n`);
-                res.write(`Installation failed with exit code ${code}\n`);
-                res.end();
-            }
-        });
-
-        child.on('error', (error) => {
-            console.error('Failed to start installation:', error);
-            res.write(`\nError: ${error.message}\n`);
-            res.end();
-        });
-
-        req.on('close', () => {
-            if (!child.killed) {
-                child.kill();
-            }
-        });
-
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        
+        const scriptContent = fs.readFileSync(scriptPath, 'utf8');
+        res.send(scriptContent);
+        
+        console.log('Installation script served to:', req.ip);
     } catch (error) {
         console.error(`GET /install error: ${error.message}`);
-        res.status(500).send(`Failed to start installation: ${error.message}\n`);
+        res.status(500).send(`Failed to get installation script: ${error.message}\n`);
     }
 });
 
