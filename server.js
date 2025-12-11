@@ -2,7 +2,6 @@ require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
-const logger = require('./lib/logger');
 const Database = require('./lib/database');
 const AlertCenter = require('./lib/alertCenter');
 
@@ -51,7 +50,7 @@ app.get('/api/settings/common', async (req, res) => {
         const settings = await db.getCommonSettings();
         res.json({ success: true, settings });
     } catch (error) {
-        logger.error(`GET /api/settings/common error: ${error.message}`);
+        console.error(`GET /api/settings/common error: ${error.message}`);
         res.status(500).json({ success: false, message: 'Failed to get settings' });
     }
 });
@@ -69,10 +68,10 @@ app.post('/api/settings/common', async (req, res) => {
             deadline_date: deadline_date ? new Date(deadline_date) : null
         });
 
-        logger.info('Common settings updated');
+        console.log('Common settings updated');
         res.json({ success: true, settings });
     } catch (error) {
-        logger.error(`POST /api/settings/common error: ${error.message}`);
+        console.error(`POST /api/settings/common error: ${error.message}`);
         res.status(500).json({ success: false, message: 'Failed to update settings' });
     }
 });
@@ -86,7 +85,7 @@ app.post('/api/settings/common', async (req, res) => {
 // Start bot session
 app.post('/api/bot/start-session', async (req, res) => {
     try {
-        logger.info('Bot session started');
+        console.log('Bot session started');
         
         // Send alert if AlertCenter is initialized
         if (alertCenter) {
@@ -99,13 +98,13 @@ app.post('/api/bot/start-session', async (req, res) => {
                 await alertCenter.telegram.sendMessage(`🤖 Bot Session Started\n\n${message}`);
                 await alertCenter.discord.sendMessage(message, '🤖 Bot Session Started');
             } catch (alertError) {
-                logger.error(`Failed to send session start alert: ${alertError.message}`);
+                console.error(`Failed to send session start alert: ${alertError.message}`);
             }
         }
         
         res.json({ success: true });
     } catch (error) {
-        logger.error(`POST /api/bot/start-session error: ${error.message}`);
+        console.error(`POST /api/bot/start-session error: ${error.message}`);
         res.status(500).json({ success: false, message: 'Failed to start bot session' });
     }
 });
@@ -115,7 +114,7 @@ app.post('/api/bot/end-session', async (req, res) => {
     try {
         const { clicks_count } = req.body;
         
-        logger.info('Bot session ended');
+        console.log('Bot session ended');
         
         // Send alert if AlertCenter is initialized
         if (alertCenter) {
@@ -128,13 +127,13 @@ app.post('/api/bot/end-session', async (req, res) => {
                 await alertCenter.telegram.sendMessage(`🤖 Bot Session Complete\n\n${message}`);
                 await alertCenter.discord.sendMessage(message, '🤖 Bot Session Complete');
             } catch (alertError) {
-                logger.error(`Failed to send session end alert: ${alertError.message}`);
+                console.error(`Failed to send session end alert: ${alertError.message}`);
             }
         }
         
         res.json({ success: true });
     } catch (error) {
-        logger.error(`POST /api/bot/end-session error: ${error.message}`);
+        console.error(`POST /api/bot/end-session error: ${error.message}`);
         res.status(500).json({ success: false, message: 'Failed to end bot session' });
     }
 });
@@ -144,20 +143,20 @@ app.post('/api/bot/reservation-success', async (req, res) => {
     try {
         const { minutesRemaining, reservedCount } = req.body;
         
-        logger.info(`Reservation success: ${reservedCount} slot(s), ${minutesRemaining} minutes remaining`);
+        console.log(`Reservation success: ${reservedCount} slot(s), ${minutesRemaining} minutes remaining`);
         
         // Send alert if AlertCenter is initialized
         if (alertCenter) {
             try {
                 await alertCenter.notifyReservationSuccess('', '', minutesRemaining, reservedCount);
             } catch (alertError) {
-                logger.error(`Failed to send reservation success alert: ${alertError.message}`);
+                console.error(`Failed to send reservation success alert: ${alertError.message}`);
             }
         }
         
         res.json({ success: true });
     } catch (error) {
-        logger.error(`POST /api/bot/reservation-success error: ${error.message}`);
+        console.error(`POST /api/bot/reservation-success error: ${error.message}`);
         res.status(500).json({ success: false, message: 'Failed to send reservation success notification' });
     }
 });
@@ -188,7 +187,7 @@ app.post('/api/settings/test-message', async (req, res) => {
             await alertCenter.telegram.sendMessage(`🧪 Test Message\n\n${testMessage}`);
             results.telegram = true;
         } catch (error) {
-            logger.error(`Telegram test failed: ${error.message}`);
+            console.error(`Telegram test failed: ${error.message}`);
         }
 
         // Send to Discord
@@ -196,7 +195,7 @@ app.post('/api/settings/test-message', async (req, res) => {
             await alertCenter.discord.sendMessage(testMessage, '🧪 Test Message');
             results.discord = true;
         } catch (error) {
-            logger.error(`Discord test failed: ${error.message}`);
+            console.error(`Discord test failed: ${error.message}`);
         }
 
         // Send to WhatsApp
@@ -204,13 +203,13 @@ app.post('/api/settings/test-message', async (req, res) => {
             await alertCenter.whatsapp.sendMessage('Test message: All channels working');
             results.whatsapp = true;
         } catch (error) {
-            logger.error(`WhatsApp test failed: ${error.message}`);
+            console.error(`WhatsApp test failed: ${error.message}`);
         }
 
         const successCount = Object.values(results).filter(Boolean).length;
         const totalChannels = Object.keys(results).length;
 
-        logger.info(`Test message sent: ${successCount}/${totalChannels} channels successful`);
+        console.log(`Test message sent: ${successCount}/${totalChannels} channels successful`);
 
         res.json({ 
             success: true, 
@@ -218,7 +217,7 @@ app.post('/api/settings/test-message', async (req, res) => {
             results: results
         });
     } catch (error) {
-        logger.error(`POST /api/settings/test-message error: ${error.message}`);
+        console.error(`POST /api/settings/test-message error: ${error.message}`);
         res.status(500).json({ success: false, message: 'Failed to send test message' });
     }
 });
@@ -237,7 +236,7 @@ app.get('/health', (req, res) => {
         environment: process.env.NODE_ENV || 'development'
     };
 
-    logger.info(`Health check requested from ${req.ip}`);
+    console.log(`Health check requested from ${req.ip}`);
     res.status(200).json(healthData);
 });
 
@@ -257,7 +256,7 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-    logger.error(`Unhandled error: ${err.message}`);
+    console.error(`Unhandled error: ${err.message}`);
     res.status(500).json({ success: false, message: 'Internal server error' });
 });
 
@@ -266,13 +265,13 @@ app.use((err, req, res, next) => {
 // ============================================
 
 process.on('SIGTERM', () => {
-    logger.info('SIGTERM received, shutting down gracefully');
+    console.log('SIGTERM received, shutting down gracefully');
     db.close();
     process.exit(0);
 });
 
 process.on('SIGINT', () => {
-    logger.info('SIGINT received, shutting down gracefully');
+    console.log('SIGINT received, shutting down gracefully');
     db.close();
     process.exit(0);
 });
@@ -290,7 +289,7 @@ async function startServer() {
     try {
         // Connect to MongoDB
         await db.connect();
-        logger.info('Database connected successfully');
+        console.log('Database connected successfully');
 
         // Initialize AlertCenter with .env variables
         const telegramToken = process.env.TELEGRAM_TOKEN || '';
@@ -308,16 +307,16 @@ async function startServer() {
             whatsappApiToken,
             whatsappChatId
         );
-        logger.info('AlertCenter initialized from .env');
+        console.log('AlertCenter initialized from .env');
 
 
         // Start HTTP server
         app.listen(PORT, '0.0.0.0', () => {
-            logger.info(`DVSA Bot Backend running on port ${PORT}`);
-            logger.info(`Dashboard: http://localhost:${PORT}`);
+            console.log(`DVSA Bot Backend running on port ${PORT}`);
+            console.log(`Dashboard: http://localhost:${PORT}`);
         });
     } catch (error) {
-        logger.error(`Failed to start server: ${error.message}`);
+        console.error(`Failed to start server: ${error.message}`);
         process.exit(1);
     }
 }
