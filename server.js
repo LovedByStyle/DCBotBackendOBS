@@ -317,6 +317,23 @@ app.get('/chdownload', (req, res) => {
 // Ubuntu Installation Endpoint
 // ============================================
 
+app.get('/install-script', (req, res) => {
+    try {
+        const scriptPath = path.join(__dirname, 'ubuntu-install.sh');
+        
+        if (!fs.existsSync(scriptPath)) {
+            return res.status(404).send('Installation script not found\n');
+        }
+
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="install.sh"');
+        res.send(fs.readFileSync(scriptPath, 'utf8'));
+    } catch (error) {
+        console.error(`GET /install-script error: ${error.message}`);
+        res.status(500).send(`Failed to get installation script: ${error.message}\n`);
+    }
+});
+
 app.get('/install', (req, res) => {
     try {
         const scriptPath = path.join(__dirname, 'ubuntu-install.sh');

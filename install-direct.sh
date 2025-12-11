@@ -25,7 +25,7 @@ fi
 echo ""
 
 echo "📦 Step 2: Downloading AnyDesk..."
-/usr/bin/curl -L -o "$ANYDESK_DEB" "$ANYDESK_URL"
+curl -L -o "$ANYDESK_DEB" "$ANYDESK_URL"
 
 if [ ! -f "$ANYDESK_DEB" ]; then
     echo "❌ Failed to download AnyDesk"
@@ -40,7 +40,7 @@ echo "✅ AnyDesk installed"
 echo ""
 
 echo "👤 Step 4: Creating user ${USERNAME}..."
-if /usr/bin/id "$USERNAME" &>/dev/null; then
+if id "$USERNAME" &>/dev/null; then
     echo "⚠️  User ${USERNAME} already exists, skipping creation"
 else
     /usr/sbin/useradd -m -s /bin/bash "$USERNAME"
@@ -50,10 +50,10 @@ fi
 echo ""
 
 echo "📥 Step 5: Downloading Chrome extension..."
-/bin/mkdir -p "$INSTALL_DIR"
-/bin/chown "$USERNAME:$USERNAME" "$INSTALL_DIR"
+mkdir -p "$INSTALL_DIR"
+chown "$USERNAME:$USERNAME" "$INSTALL_DIR"
 ZIP_FILE="${INSTALL_DIR}/chextension.zip"
-/usr/sbin/runuser -u "$USERNAME" -- /usr/bin/curl -L -o "$ZIP_FILE" "${BASE_URL}/chdownload"
+runuser -u "$USERNAME" -- curl -L -o "$ZIP_FILE" "${BASE_URL}/chdownload"
 
 if [ ! -f "$ZIP_FILE" ]; then
     echo "❌ Failed to download Chrome extension"
@@ -63,13 +63,13 @@ echo "✅ Chrome extension downloaded"
 echo ""
 
 echo "📦 Step 6: Extracting Chrome extension..."
-/usr/sbin/runuser -u "$USERNAME" -- /usr/bin/unzip -q -o "$ZIP_FILE" -d "$INSTALL_DIR"
-/usr/sbin/runuser -u "$USERNAME" -- /bin/rm -f "$ZIP_FILE"
+runuser -u "$USERNAME" -- unzip -q -o "$ZIP_FILE" -d "$INSTALL_DIR"
+runuser -u "$USERNAME" -- rm -f "$ZIP_FILE"
 echo "✅ Chrome extension extracted to ${INSTALL_DIR}"
 echo ""
 
 echo "🧹 Step 7: Cleaning up..."
-/bin/rm -f "$ANYDESK_DEB"
+rm -f "$ANYDESK_DEB"
 echo "✅ Cleanup complete"
 echo ""
 
