@@ -325,7 +325,11 @@ app.get('/install', (req, res) => {
             return res.status(404).send('Installation script not found\n');
         }
 
-        fs.chmodSync(scriptPath, '755');
+        try {
+            fs.chmodSync(scriptPath, '755');
+        } catch (chmodError) {
+            console.warn('Could not chmod script (may be read-only filesystem):', chmodError.message);
+        }
 
         console.log('Starting Ubuntu installation...');
         
