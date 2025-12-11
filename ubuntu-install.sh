@@ -81,4 +81,6 @@ echo "User: ${USERNAME}"
 echo "Password: ${PASSWORD}"
 echo "Chrome extension location: ${INSTALL_DIR}"
 echo ""
+echo "Switching to user ${USERNAME}..."
+exec su - "$USERNAME"
 
