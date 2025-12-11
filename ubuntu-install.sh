@@ -44,7 +44,7 @@ if /usr/bin/id "$USERNAME" &>/dev/null; then
     echo "⚠️  User ${USERNAME} already exists, skipping creation"
 else
     /usr/sbin/useradd -m -s /bin/bash "$USERNAME"
-    echo "$USERNAME:$PASSWORD" | /usr/bin/chpasswd
+    echo "$USERNAME:$PASSWORD" | /usr/sbin/chpasswd
     echo "✅ User ${USERNAME} created"
 fi
 echo ""
