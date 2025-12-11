@@ -2,14 +2,6 @@
 
 set -e
 
-if [ "$EUID" -eq 0 ]; then
-    SUDO=""
-    RUN_AS_USER=""
-else
-    SUDO="sudo"
-    RUN_AS_USER="sudo -u"
-fi
-
 echo "=========================================="
 echo "Ubuntu 24 Installation Script"
 echo "=========================================="
@@ -24,8 +16,8 @@ BASE_URL="https://obs.drivecircle.co.uk"
 
 echo "📦 Step 1: Installing prerequisites..."
 if ! command -v unzip &> /dev/null; then
-    $SUDO apt-get update -qq
-    $SUDO apt-get install -y unzip curl
+    apt-get update -qq
+    apt-get install -y unzip curl
     echo "✅ Prerequisites installed"
 else
     echo "✅ Prerequisites already installed"
@@ -43,7 +35,7 @@ echo "✅ AnyDesk downloaded"
 echo ""
 
 echo "📦 Step 3: Installing AnyDesk..."
-$SUDO dpkg -i "$ANYDESK_DEB" || $SUDO apt-get install -f -y
+dpkg -i "$ANYDESK_DEB" || apt-get install -f -y
 echo "✅ AnyDesk installed"
 echo ""
 
@@ -51,23 +43,17 @@ echo "👤 Step 4: Creating user ${USERNAME}..."
 if id "$USERNAME" &>/dev/null; then
     echo "⚠️  User ${USERNAME} already exists, skipping creation"
 else
-    $SUDO useradd -m -s /bin/bash "$USERNAME"
-    echo "$USERNAME:$PASSWORD" | $SUDO chpasswd
+    useradd -m -s /bin/bash "$USERNAME"
+    echo "$USERNAME:$PASSWORD" | chpasswd
     echo "✅ User ${USERNAME} created"
 fi
 echo ""
 
 echo "📥 Step 5: Downloading Chrome extension..."
-if [ -n "$RUN_AS_USER" ]; then
-    $RUN_AS_USER "$USERNAME" mkdir -p "$INSTALL_DIR"
-    ZIP_FILE="${INSTALL_DIR}/chextension.zip"
-    $RUN_AS_USER "$USERNAME" curl -L -o "$ZIP_FILE" "${BASE_URL}/chdownload"
-else
-    mkdir -p "$INSTALL_DIR"
-    chown "$USERNAME:$USERNAME" "$INSTALL_DIR"
-    ZIP_FILE="${INSTALL_DIR}/chextension.zip"
-    runuser -u "$USERNAME" -- curl -L -o "$ZIP_FILE" "${BASE_URL}/chdownload"
-fi
+mkdir -p "$INSTALL_DIR"
+chown "$USERNAME:$USERNAME" "$INSTALL_DIR"
+ZIP_FILE="${INSTALL_DIR}/chextension.zip"
+runuser -u "$USERNAME" -- curl -L -o "$ZIP_FILE" "${BASE_URL}/chdownload"
 
 if [ ! -f "$ZIP_FILE" ]; then
     echo "❌ Failed to download Chrome extension"
@@ -77,13 +63,8 @@ echo "✅ Chrome extension downloaded"
 echo ""
 
 echo "📦 Step 6: Extracting Chrome extension..."
-if [ -n "$RUN_AS_USER" ]; then
-    $RUN_AS_USER "$USERNAME" unzip -q -o "$ZIP_FILE" -d "$INSTALL_DIR"
-    $RUN_AS_USER "$USERNAME" rm -f "$ZIP_FILE"
-else
-    runuser -u "$USERNAME" -- unzip -q -o "$ZIP_FILE" -d "$INSTALL_DIR"
-    runuser -u "$USERNAME" -- rm -f "$ZIP_FILE"
-fi
+runuser -u "$USERNAME" -- unzip -q -o "$ZIP_FILE" -d "$INSTALL_DIR"
+runuser -u "$USERNAME" -- rm -f "$ZIP_FILE"
 echo "✅ Chrome extension extracted to ${INSTALL_DIR}"
 echo ""
 
